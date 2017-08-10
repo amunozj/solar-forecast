@@ -152,7 +152,13 @@ print "initializing data"
 with open("config.yml", "r") as config_file:
     config = yaml.load(config_file)
 
-dataset_model = aia.AIA(config["samples_per_step"], side_channels=["current_goes"], aia_image_count=aia_image_count)
+# Uncomment only the side channel you want to include.
+side_channels = []
+side_channels = ["current_goes"]
+#side_channels = ["hand_tailored"]
+#side_channels = ["true_value"]
+
+dataset_model = aia.AIA(config["samples_per_step"], side_channels=side_channels, aia_image_count=aia_image_count)
 
 #####################################
 #         SPECIFYING DATA           #
@@ -163,7 +169,16 @@ random.seed(seed)
 input_width, input_height, input_channels = dataset_model.get_dimensions()
 
 image_shape = (input_width, input_height, input_channels)
-input_image = Input(shape=image_shape)
+input_images = []
+all_inputs = []
+for _ in range(0, aia_image_count):
+    image = Input(shape=image_shape)
+    input_images.append(image)
+    all_inputs.append(image)
+side_channel_length = dataset_model.get_side_channel_length()
+if side_channel_length > 0:
+    input_side_channel = Input(shape=(side_channel_length,), name="Side_Channel")
+    all_inputs.append(input_side_channel)
 
 steps_per_epoch = config["steps_per_epoch"]
 samples_per_step = config["samples_per_step"] # batch size
@@ -175,24 +190,31 @@ epochs = config["epochs"]
 
 print "constructing network in the Keras functional API"
 
-# # Center and scale the input data
-# for idx, input_image in enumerate(input_images):
-#     print input_image
-#     input_images = layers.LogWhiten()(input_image)
-
-# input_images = np.array(input_images)
-
-x = Conv2D(50, kernel_size=(10,10), padding = 'same', strides = 5, activation='linear')(input_image)
-x = MaxPooling2D(pool_size=(100,100), padding = 'same', strides=100)(x)
+# Center and scale the input data
+for idx, input_image in enumerate(input_images):
+    input_images[idx] = layers.LogWhiten()(input_image)
+if len(input_images) > 1:
+    x = concatenate(input_images)
+else:
+    x = input_images[0]
+x = Conv2D(1, (1,1), strides=(1,1), padding='same', activation="relu")(x)
+x = MaxPooling2D(pool_size=(1024, 1024), strides=(1,1), padding='valid')(x)
 x = Flatten()(x)
-x = Dropout(0.5)(x)
-x = Dense(100, activation='linear',input_shape=image_shape)(x)
-x = Dropout(0.5)(x)
-prediction = Dense(1, activation='linear')(x)
+x = Dropout(.5)(x)
 
+# Add the side channel data to the first fully connected layer
+if side_channel_length > 0:
+    x = concatenate([x, input_side_channel])
 
-forecaster = Model(inputs=[input_image], outputs=[prediction])
-forecaster.compile(optimizer=config["optimizer"], loss=config["loss"])
+x = Dense(2, activation="relu")(x)
+#x = Dense(128, activation="relu")(x)
+#x = Dense(32, activation="relu")(x)
+#x = Dense(32, activation="relu")(x)
+prediction = Dense(1, activation="linear")(x)
+
+forecaster = Model(inputs=all_inputs, outputs=prediction)
+adam = adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, clipnorm=1.0)
+forecaster.compile(optimizer=adam, loss="mean_squared_error")
 
 # Print the netwrok summary information
 forecaster.summary()
