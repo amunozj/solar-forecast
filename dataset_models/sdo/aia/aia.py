@@ -15,7 +15,7 @@ class AIA(dataset_models.dataset.Dataset):
 
     def __init__(self,
                  samples_per_step=32,
-                 dependent_variable="flux delta",
+                 dependent_variable="forecast",
                  lag="01hr",
                  catch="24hr",
                  aia_image_count=2,

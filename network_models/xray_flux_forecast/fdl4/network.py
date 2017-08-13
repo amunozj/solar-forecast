@@ -196,8 +196,12 @@ if len(input_images) > 1:
     x = concatenate(input_images)
 else:
     x = input_images[0]
-x = Conv2D(1, (1,1), strides=(1,1), padding='same', activation="relu")(x)
-x = MaxPooling2D(pool_size=(1024, 1024), strides=(1,1), padding='valid')(x)
+x = Conv2D(16, kernel_size=10, padding = 'valid', activation='relu')(x)
+x = MaxPooling2D(pool_size=5, padding = 'valid')(x)
+x = Conv2D(32, kernel_size=10, padding = 'valid', activation='relu')(x)
+x = MaxPooling2D(pool_size=5, padding = 'valid')(x)
+x = Conv2D(16, kernel_size=10, padding = 'valid', activation='relu')(x)
+x = MaxPooling2D(pool_size=5, padding = 'valid')(x)
 x = Flatten()(x)
 x = Dropout(.5)(x)
 
@@ -205,7 +209,7 @@ x = Dropout(.5)(x)
 if side_channel_length > 0:
     x = concatenate([x, input_side_channel])
 
-x = Dense(2, activation="relu")(x)
+x = Dense(10, activation="relu")(x)
 #x = Dense(128, activation="relu")(x)
 #x = Dense(32, activation="relu")(x)
 #x = Dense(32, activation="relu")(x)
@@ -224,6 +228,8 @@ forecaster.summary() # This does not return the summary string so we capture sta
 sys.stdout = orig_stdout
 f.close()
 
+#print junk
+
 print "##################"
 print "Run identifier: " + str(training_callbacks.timestr)
 print "You can find the results from this run in a folder named " + str(training_callbacks.timestr)
@@ -240,7 +246,7 @@ if forecaster.count_params() > 150000000:
 #####################################
 
 # Save intermediate outputs including the full model
-tensorboard_log_data_path = "/tmp/version1/"
+tensorboard_log_data_path = model_directory_path + "/tmp/version1/"
 tensorboard_callbacks = TensorBoard(log_dir=tensorboard_log_data_path)
 model_output_path = model_directory_path + training_callbacks.timestr + "/epochs/weights.{epoch:02d}-{val_loss:.2f}.hdf5"
 if not os.path.exists(model_output_path):

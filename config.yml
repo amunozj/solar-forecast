@@ -1,9 +1,9 @@
 # Data Locations
-aia_path: /data/sw/version4/
+aia_path: /home/solardynamo/network_data/
 
 # Network Learning Parameters
 steps_per_epoch: 100
 samples_per_step: 30
-epochs: 100
+epochs: 50
 optimizer: adam
 loss: mean_squared_error
