@@ -75,7 +75,7 @@ class AIA(dataset_models.dataset.Dataset):
             for line in f:
                 split_y = line.split(",")
                 cur_y = float(split_y[1])
-                self.y_dict[split_y[0]] = cur_y
+                self.y_dict[split_y[0]] = cur_y*1e6
                 self.y_prior_dict[split_y[0]] = float(split_y[2])
         self._clean_data()
 
