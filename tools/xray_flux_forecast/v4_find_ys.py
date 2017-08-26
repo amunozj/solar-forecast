@@ -87,8 +87,8 @@ for delay in delays:
         Y_vals.append(y_row)
         
         #Processing flare files
-        flare_files = glob.glob(filePath + 'validation/*_AIA*060m.fthr')
-        flare_files += glob.glob(filePath + 'training/*_AIA*060m.fthr')
+        flare_files = glob.glob(filePath + 'validation/*_AIA*012h.fthr')
+        flare_files += glob.glob(filePath + 'training/*_AIA*012h.fthr')
         for f in flare_files:
 
             inxSlash =  [m.start() for m in re.finditer('/', f)]

@@ -40,7 +40,7 @@ can track the progress.
 #####################################
 
 # Neural network specification
-from keras.layers import Input, Dense, Conv2D, Conv1D, MaxPooling2D, Dropout, Flatten, Activation, AveragePooling2D, concatenate, Lambda
+from keras.layers import Input, Dense, Conv2D, Conv1D, MaxPooling2D, Dropout, Flatten, Activation, AveragePooling2D, concatenate, Lambda, advanced_activations
 from keras.models import Model
 from keras.callbacks import ModelCheckpoint
 from keras import backend as K
@@ -69,9 +69,12 @@ from tools import tools
 from keras.optimizers import adam
 
 # Uncomment to force training to take place on the CPU
-#import os
+import os
 #os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"   # see issue #152
 #os.environ["CUDA_VISIBLE_DEVICES"] = ""
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+
+
 
 #####################################
 #        Specifying Network         #
@@ -196,24 +199,29 @@ if len(input_images) > 1:
     x = concatenate(input_images)
 else:
     x = input_images[0]
-x = Conv2D(16, kernel_size=5, padding = 'valid', activation='relu', use_bias=False, kernel_initializer = 'lecun_uniform')(x)
-x = MaxPooling2D(pool_size=5, padding = 'valid')(x)
-x = Conv2D(16, kernel_size=5, padding = 'valid', activation='relu', use_bias=False, kernel_initializer = 'lecun_uniform')(x)
-x = MaxPooling2D(pool_size=5, padding = 'valid')(x)
-x = Conv2D(16, kernel_size=5, padding = 'valid', activation='relu', use_bias=False, kernel_initializer = 'lecun_uniform')(x)
-x = MaxPooling2D(pool_size=5, padding = 'valid')(x)
+
+def relu_advanced(x):
+    return K.relu(x, alpha=0.01)    
+
+x = Conv2D(16, kernel_size=16, padding = 'same', activation='relu', use_bias=False, kernel_initializer = 'lecun_uniform')(x)
+x = Conv2D(16, kernel_size=16, padding = 'same', activation='relu', use_bias=False, kernel_initializer = 'lecun_uniform')(x)
+x = MaxPooling2D(pool_size=8, padding = 'same')(x)
+x = Conv2D(32, kernel_size=8, padding = 'same', activation='relu', use_bias=False, kernel_initializer = 'lecun_uniform')(x)
+x = Conv2D(32, kernel_size=8, padding = 'same', activation='relu', use_bias=False, kernel_initializer = 'lecun_uniform')(x)
+x = MaxPooling2D(pool_size=8, padding = 'same')(x)
+x = Conv2D(64, kernel_size=8, padding = 'same', activation='relu', use_bias=False, kernel_initializer = 'lecun_uniform')(x)
+x = Conv2D(64, kernel_size=8, padding = 'same', activation='relu', use_bias=False, kernel_initializer = 'lecun_uniform')(x)
+x = MaxPooling2D(pool_size=4, padding = 'same')(x)
 x = Flatten()(x)
-x = Dropout(.5)(x)
+x = Dropout(.3)(x)
 
 # Add the side channel data to the first fully connected layer
 if side_channel_length > 0:
     x = concatenate([x, input_side_channel])
 
-x = Dense(10, activation="relu", use_bias=False)(x)
-#x = Dense(128, activation="relu")(x)
-#x = Dense(32, activation="relu")(x)
-#x = Dense(32, activation="relu")(x)
-prediction = Dense(1, activation="relu")(x)
+x = Dense(10, activation='relu', use_bias=False)(x)
+prediction = Dense(1, activation="linear")(x)
+
 
 forecaster = Model(inputs=all_inputs, outputs=prediction)
 adam = adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, clipnorm=1.0)

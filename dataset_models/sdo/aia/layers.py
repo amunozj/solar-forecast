@@ -40,7 +40,8 @@ class LogWhiten(keras.engine.topology.Layer):
         super(LogWhiten, self).build(input_shape)
 
     def call(self, x):
-        x = K.tf.maximum(x,[1.0])
+        x = K.tf.maximum(x,[8.0])
+        x = K.tf.subtract(x, [7.0])
         x = K.tf.log(x)
         #x = K.tf.subtract(x, self.centering_tensor)
         #x = K.tf.divide(x, self.scaling_tensor)
