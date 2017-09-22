@@ -72,7 +72,7 @@ from keras.optimizers import adam
 import os
 #os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"   # see issue #152
 #os.environ["CUDA_VISIBLE_DEVICES"] = ""
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+#os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 
 
@@ -147,7 +147,7 @@ training_callbacks = TrainingCallbacks(model_directory_path, args)
 #        INITIALIZING DATA          #
 #####################################
 
-print "initializing data"
+print("initializing data")
 
 # Load the configuration file. You should never change
 # the configuration within this file.
@@ -190,7 +190,7 @@ epochs = config["epochs"]
 #     Constructing Architecture     #
 #####################################
 
-print "constructing network in the Keras functional API"
+print("constructing network in the Keras functional API")
 
 # Center and scale the input data
 for idx, input_image in enumerate(input_images):
@@ -213,7 +213,7 @@ x = Conv2D(64, kernel_size=8, padding = 'same', activation='relu', use_bias=Fals
 x = Conv2D(64, kernel_size=8, padding = 'same', activation='relu', use_bias=False, kernel_initializer = 'lecun_uniform')(x)
 x = MaxPooling2D(pool_size=4, padding = 'same')(x)
 x = Flatten()(x)
-x = Dropout(.3)(x)
+x = Dropout(.2)(x)
 
 # Add the side channel data to the first fully connected layer
 if side_channel_length > 0:
@@ -224,7 +224,7 @@ prediction = Dense(1, activation="linear")(x)
 
 
 forecaster = Model(inputs=all_inputs, outputs=prediction)
-adam = adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, clipnorm=1.0)
+adam = adam(lr=0.000001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0001, clipnorm=2.0)
 forecaster.compile(optimizer=adam, loss="mean_squared_error")
 
 # Print the netwrok summary information
@@ -238,15 +238,15 @@ f.close()
 
 #print junk
 
-print "##################"
-print "Run identifier: " + str(training_callbacks.timestr)
-print "You can find the results from this run in a folder named " + str(training_callbacks.timestr)
-print "##################"
+print("##################")
+print("Run identifier: " + str(training_callbacks.timestr))
+print("You can find the results from this run in a folder named " + str(training_callbacks.timestr))
+print("##################")
 
 # Do not allow a configuration with more than 150 million parameters
 if forecaster.count_params() > 150000000:
-    print "exiting since this network architecture will contain too many parameters"
-    print "Result for SMAC: SUCCESS, 0, 0, 999999999, 0" #  todo: figure out the failure string within SMAC
+    print("exiting since this network architecture will contain too many parameters")
+    print("Result for SMAC: SUCCESS, 0, 0, 999999999, 0") #  todo: figure out the failure string within SMAC
     exit()
 
 #####################################
@@ -271,13 +271,13 @@ history = forecaster.fit_generator(dataset_model.training_generator(),
 )
 
 # Loss on the training set
-print "printing loss history"
-print history.history['loss']
+print("printing loss history")
+print(history.history['loss'])
 
 # Loss on the validation set
 if 'val_loss' in history.history.keys():
-    print "printing history of validation loss over all epochs:"
-    print history.history['val_loss']
+    print("printing history of validation loss over all epochs:")
+    print(history.history['val_loss'])
 
 # Print the performance of the network for the SMAC algorithm
-print "Result for SMAC: SUCCESS, 0, 0, %f, 0" % history.history['loss'][-1]
+print("Result for SMAC: SUCCESS, 0, 0, %f, 0" % history.history['loss'][-1])

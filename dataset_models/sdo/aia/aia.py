@@ -4,8 +4,10 @@ from datetime import timedelta, datetime
 import random
 import math
 import dataset_models.dataset
-from operator import div, sub
+from operator import truediv as div
+from operator import sub
 import feather
+import scipy.ndimage as sp
 
 class AIA(dataset_models.dataset.Dataset):
     """
@@ -70,7 +72,7 @@ class AIA(dataset_models.dataset.Dataset):
         # Load the y variables into memory
         self.y_dict = {}
         self.y_prior_dict = {}
-        with open(self.y_filepath, "rb") as f:
+        with open(self.y_filepath, "r") as f:
             f.readline()
             for line in f:
                 split_y = line.split(",")
@@ -169,7 +171,7 @@ class AIA(dataset_models.dataset.Dataset):
         model = self.get_network_model(network_model_path)
         for layer in model.layers:
             weights = layer.get_weights() # list of numpy arrays
-            print weights
+            print(weights)
 
     def evaluate_network(self, network_model_path):
         """
@@ -203,11 +205,11 @@ class AIA(dataset_models.dataset.Dataset):
 
         save_performance(self.train_files[0::100], network_model_path + ".training.performance", training=True)
         save_performance(self.validation_files, network_model_path + ".validation.performance", training=False)
-        print "#########"
-        print "performance data has been saved to the following locations"
-        print network_model_path + ".training.performance"
-        print network_model_path + ".validation.performance"
-        print "#########"
+        print("#########")
+        print("performance data has been saved to the following locations")
+        print(network_model_path + ".training.performance")
+        print(network_model_path + ".validation.performance")
+        print("#########")
 
     def download_dataset(self):
         """
@@ -347,6 +349,7 @@ class AIA(dataset_models.dataset.Dataset):
         Reshape the dataset to be appropriate for training and validation.
         """
         for index in range(0, self.aia_image_count):
+            #print(type(data_x[index]))
             data_x[index] = np.reshape(data_x[index], (len(data_x[index]), self.input_width, self.input_height, self.input_channels)).astype('float32')
 
         assert len(self.side_channels) < 2, "You need to fix this for arbitrary side channel selection"
@@ -456,10 +459,11 @@ class AIA(dataset_models.dataset.Dataset):
                     return False
                 return True
             return filter_files
-        self.train_files = filter(filter_closure(True), self.train_files)
-        self.validation_files = filter(filter_closure(False), self.validation_files)
-        print "Training " + str(starting_training_count) + "-> " + str(len(self.train_files))
-        print "Validation " + str(starting_validation_count) + "-> " + str(len(self.validation_files))
+        self.train_files = list(filter(filter_closure(True), self.train_files))
+        self.validation_files = list(filter(filter_closure(False), self.validation_files))
+
+        print("Training " + str(starting_training_count) + "-> " + str(len(self.train_files)))
+        print("Validation " + str(starting_validation_count) + "-> " + str(len(self.validation_files)))
 
     def _get_aia_image(self, filename, directory, previous=0):
         """
@@ -525,23 +529,36 @@ class AIA(dataset_models.dataset.Dataset):
         else:
             directory = self.validation_directory
 
-        RndFlip = np.random.rand(2,1)
-        #print 'Toss'
-        #print RndFlip
-
+        #random throw
+        RndFlip = np.random.rand(4,1)        
+        
         for index in range(0, aia_image_count):
 
             image = self._get_aia_image(filename, directory, previous=index)
 
+
             if RndFlip[0]>0.5:
-                #print 'Flipping Vertically'
-                image = np.flipud(image)
+                #print 'Flipping Horizontally'
+                image = np.fliplr(image)
 
             if RndFlip[1]>0.5:
-                #print 'Flipping Horizontally'
-                image = np.flipud(image)            
+                #print 'Flipping Vertically'
+                image = np.flipud(image)
+                
+            #Rotating
+            #print((RndFlip[1]-0.5)*2*180)
+            #image = sp.interpolation.rotate(image,(RndFlip[1]-0.5)*2*180,axes=(1, 0),reshape=False)
+                
+            #Shifting Vertically and Horizontally    
+            maxRoll = 60;
+
+            #print(int(np.rint((RndFlip[2]-0.5)*2*maxRoll)), int(np.rint((RndFlip[3]-0.5)*2*maxRoll)))
+
+            #image = np.roll(image, int(np.rint((RndFlip[2]-0.5)*2*maxRoll)), 1)    
+            #image = np.roll(image, int(np.rint((RndFlip[3]-0.5)*2*maxRoll)), 0) 
 
             current_data.append(image)
+
         if self.side_channels:
             data_x_side_channel_sample = self._get_side_channel_data(filename)
             current_data.append(data_x_side_channel_sample)
