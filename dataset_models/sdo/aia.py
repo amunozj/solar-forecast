@@ -72,10 +72,10 @@ class AIA(dataset_models.dataset.Dataset):
         # Load the y variables into memory
         self.y_dict = {}
         self.y_prior_dict = {}
-        with open(self.y_filepath, "rb") as f:
+        with open(self.y_filepath, "r") as f:
             f.readline()
             for line in f:
-                split_y = line.split(",")
+                split_y = line.split(',')
                 #cur_y = float(split_y[1])
                 cur_y = float(split_y[3])
                 self.y_dict[split_y[0]] = cur_y*1e6

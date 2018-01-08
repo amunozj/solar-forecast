@@ -24,8 +24,8 @@ import re
 import os
 import os.path
 
-filePath = "dataset_models/sdo/"
-dependent_variable_path = "dataset_models/sdo/y/"
+filePath = "/home/amunozj/FlareAIA/"
+dependent_variable_path = "/home/amunozj/FlareAIA/y/"
 if not os.path.exists(dependent_variable_path):
     os.makedirs(dependent_variable_path)
 

@@ -18,11 +18,16 @@ import dataset_models.sdo.layers as custom_layers_module
 # Optimizer used in training
 from keras.optimizers import adam
 
+# Uncomment to force training to take place on the CPU
+#import os
+#os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"   # see issue #152
+#os.environ["CUDA_VISIBLE_DEVICES"] = ""
+
 #####################################
 #        INITIALIZING DATA          #
 #####################################
 
-print "initializing data"
+print("initializing data")
 
 # How many images will be composited
 aia_image_count = 1
@@ -70,7 +75,7 @@ if side_channel_length > 0:
 #     Constructing Architecture     #
 #####################################
 
-print "constructing network in the Keras functional API"
+print("constructing network in the Keras functional API")
 
 # Center and scale the input data
 for idx, input_image in enumerate(input_images):
