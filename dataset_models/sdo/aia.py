@@ -17,7 +17,7 @@ class AIA(dataset_models.dataset.Dataset):
 
     def __init__(self,
                  samples_per_step=32,
-                 dependent_variable="forecast",
+                 dependent_variable="flux delta",
                  lag="01hr",
                  catch="24hr",
                  aia_image_count=2,
@@ -75,7 +75,7 @@ class AIA(dataset_models.dataset.Dataset):
         with open(self.y_filepath, "r") as f:
             f.readline()
             for line in f:
-                split_y = line.split(',')
+                split_y = line.split(",")
                 #cur_y = float(split_y[1])
                 cur_y = float(split_y[3])
                 self.y_dict[split_y[0]] = cur_y*1e6

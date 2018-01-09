@@ -28,9 +28,9 @@ class TrainingCallbacks(keras.callbacks.Callback):
 
         with open(self.filepath, "ab") as out:
             for loss in self.losses:
-                out.write((loss[0]))
+                out.write(loss[0])
                 out.write(",")
-                out.write((loss[1]))
+                out.write(loss[1])
                 out.write(",")
                 out.write(self.argument_string)
                 out.write("\n")

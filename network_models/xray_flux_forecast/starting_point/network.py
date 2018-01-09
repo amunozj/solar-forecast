@@ -18,11 +18,6 @@ import dataset_models.sdo.layers as custom_layers_module
 # Optimizer used in training
 from keras.optimizers import adam
 
-# Uncomment to force training to take place on the CPU
-#import os
-#os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"   # see issue #152
-#os.environ["CUDA_VISIBLE_DEVICES"] = ""
-
 #####################################
 #        INITIALIZING DATA          #
 #####################################
@@ -84,16 +79,24 @@ if len(input_images) > 1:
     x = concatenate(input_images)
 else:
     x = input_images[0]
-x = Conv2D(1, (1,1), strides=(1,1), padding='same', activation="relu")(x)
-x = MaxPooling2D(pool_size=(1024, 1024), strides=(1,1), padding='valid')(x)
+    
+x = Conv2D(16, kernel_size=16, padding = 'same', activation='relu', use_bias=False, kernel_initializer = 'lecun_uniform')(x)
+x = Conv2D(16, kernel_size=16, padding = 'same', activation='relu', use_bias=False, kernel_initializer = 'lecun_uniform')(x)
+x = MaxPooling2D(pool_size=8, padding = 'same')(x)
+x = Conv2D(32, kernel_size=8, padding = 'same', activation='relu', use_bias=False, kernel_initializer = 'lecun_uniform')(x)
+x = Conv2D(32, kernel_size=8, padding = 'same', activation='relu', use_bias=False, kernel_initializer = 'lecun_uniform')(x)
+x = MaxPooling2D(pool_size=8, padding = 'same')(x)
+x = Conv2D(64, kernel_size=8, padding = 'same', activation='relu', use_bias=False, kernel_initializer = 'lecun_uniform')(x)
+x = Conv2D(64, kernel_size=8, padding = 'same', activation='relu', use_bias=False, kernel_initializer = 'lecun_uniform')(x)
+x = MaxPooling2D(pool_size=4, padding = 'same')(x)
 x = Flatten()(x)
-x = Dropout(.5)(x)
+x = Dropout(.2)(x)
 
 # Add the side channel data to the first fully connected layer
 if side_channel_length > 0:
     x = concatenate([x, input_side_channel])
 
-x = Dense(2, activation="relu")(x)
+x = Dense(10, activation='relu', use_bias=False)(x)
 prediction = Dense(1, activation="linear")(x)
 
 network_model = Model(inputs=all_inputs, outputs=prediction)
