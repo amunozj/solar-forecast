@@ -24,17 +24,17 @@ import re
 import os
 import os.path
 
-with open("config.yml", "r") as config_file:
-    config = yaml.load(config_file)
+# with open("config.yml", "r") as config_file:
+#     config = yaml.load(config_file)
 
-filePath = config['aia_path']
+filePath = '/home/amunozj/FlareAIA/'
 dependent_variable_path = filePath + "y/"
 
 if not os.path.exists(dependent_variable_path):
     os.makedirs(dependent_variable_path)
 
 #Y_data
-Y_file_path = 'tools/xray_flux_forecast/Flux_2010_2017_max.csv'
+Y_file_path = 'Flux_2010_2017_max.csv'
 Y_data = csv.reader(open(Y_file_path,'r'))
 Y_data = list(Y_data)
 Y_init_date = datetime.datetime.strptime(Y_data[1][0],'%Y-%m-%d %H:%M:%S')
@@ -92,14 +92,14 @@ for delay in delays:
         Y_vals.append(y_row)
         
         #Processing flare files
-        flare_files = glob.glob(filePath + 'validation/*_AIA*012h.fthr')
-        flare_files += glob.glob(filePath + 'training/*_AIA*012h.fthr')
+        flare_files = glob.glob(filePath + 'validation/*_AIA*04h.fits')
+        flare_files += glob.glob(filePath + 'training/*_AIA*04h.fits')
         for f in flare_files:
 
             inxSlash =  [m.start() for m in re.finditer('/', f)]
             inxSlash = inxSlash[len(inxSlash)-1]
             f = f[inxSlash+1:]           
-            date_s = f[9:22]
+            date_s = f[20:33]
 
             #Current Xray flux
             date = datetime.datetime.strptime(date_s,'%Y%m%d_%H%M')
@@ -125,7 +125,7 @@ for delay in delays:
             inxSlash =  [m.start() for m in re.finditer('/', f)]
             inxSlash = inxSlash[len(inxSlash)-1]
             f = f[inxSlash+1:]           
-            date_s = f[9:22]
+            date_s = f[20:33]
 
             #Current Xray flux
             date = datetime.datetime.strptime(date_s,'%Y%m%d_%H%M')
